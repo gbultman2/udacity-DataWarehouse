@@ -16,3 +16,22 @@ In this project, you'll apply what you've learned on data warehouses and AWS to 
     Udacity provides a temporary AWS account for you to build the necessary resources for this project. NB This will REPLACE your AWS credentials which are in your .aws folder. PLEASE make sure you copy those first since they will be overwritten. IF you are having difficulty completing the Project in 1 session (there is a time limit), you MAY find it more effective to use your own AWS account. This would avoid the need to validate your session each time you restart on the project. However, that would be your own funds. It is unlikely that would cost you more than a few dollars.
     The starter code that we give you provides a framework for doing this project. The vast majority of your work will be getting the SQL queries part correct. Very few changes will be required to the starter code.
     This is an excellent template that you can take into the work place and use for future ETL jobs that you would do as a Data Engineer. It is well architected (e.g. staging tables for data independence from the logs and the final Sparkify DWH) AND bulk data loads into the Sparkify DWH for high compute performance via SQL from those staging tables.
+
+## Schema for Song Play Analysis
+
+Using the song and event datasets, you'll need to create a star schema optimized for queries on song play analysis. This includes the following tables.
+Fact Table
+
+    songplays - records in event data associated with song plays i.e. records with page NextSong
+        songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent
+
+Dimension Tables
+
+    users - users in the app
+        user_id, first_name, last_name, gender, level
+    songs - songs in music database
+        song_id, title, artist_id, year, duration
+    artists - artists in music database
+        artist_id, name, location, latitude, longitude
+    time - timestamps of records in songplays broken down into specific units
+        start_time, hour, day, week, month, year, weekday
