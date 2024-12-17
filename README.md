@@ -77,4 +77,10 @@ The project instructions call for the following tables to be includes the follow
 |artists|dimension|artist_id, name, location, latitude, longitude|
 |time|dimension|start_time, hour, day, week, month, year, weekday|
 
-Before going further, there are 
+Before going further, there are some changes we need to make for data warehouse best practices:
+
+1.  Table names should be singular for clarity, simplicity, and consistency.  This is a general best practice for database design.
+2.  Using natural keys like song_id, user_id, artist_id from the source data as a primary keys in the data warehouse is not a good idea.  We need to implement surrogate keys (system generated keys) in the data warehouse as a best practice.  This future proofs the schema in case of new data sources, software updates, etc.  We will keep the natural keys in the data as degenerate keys for reference.
+3.  The time dimension should be split into separate date and time dimensions. The data contain unix timestamps with milliseconds.  The time table could get unreasonably large if we left it as a datetime.  If we were to actually populate the time dimension using the datetime, it would have 86,400,000 ms per day!  This is not sustainable.  We will drop the ms values and have 86,400 rows in the time and start with 10 years in the date table. This is roughly 3652 rows depending on leap days.
+
+These changes ensure that the data warehouse is stable, efficient, and follows best practices.
