@@ -9,7 +9,7 @@ Note: text in italic font is from the project instructions on udacity.
 
 # Part 1 - Data Warehouse Design
 
-Before starting this project, we need to see what data we have and what we are asked to find.  Data warehouses are built to facilitate answering business users' questions.  Some of these questions may be unknown to the user at the time of development.  Therefore, it's important to select the appropriate grain for our fact table and make sure that we have conforming dimension tables.  In this project, it is fairly straightforward since we are given a single fact of song plays. 
+Before starting this project, we need to see what data we have and what we are asked to find.  Data warehouses are built to facilitate answering business users' questions.  Some of these questions may be unknown to the user at the time of development.  Therefore, it's important to select the appropriate grain for our fact table and make sure that we have conforming dimension tables.  In this project, it is fairly straightforward since we are given a single fact of song plays as our grain. 
 
 ## Step 1 - Inspect the Data
 
@@ -42,7 +42,7 @@ So, we have the following properties in song_data with my estimated data types:
 
 *The log files in the dataset you'll be working with are partitioned by year and month. For example, here are file paths to two files in this dataset.*
 
-![logdata](log-data.png)]
+![logdata](log-data.png)
 
 | Column Name       | Data Type                           |
 |-------------------|-------------------------------------|
@@ -83,4 +83,9 @@ Before going further, there are some changes we need to make for data warehouse 
 2.  Using natural keys like song_id, user_id, artist_id from the source data as a primary keys in the data warehouse is not a good idea.  We need to implement surrogate keys (system generated keys) in the data warehouse as a best practice.  This future proofs the schema in case of new data sources, software updates, etc.  We will keep the natural keys in the data as degenerate keys for reference.
 3.  The time dimension should be split into separate date and time dimensions. The data contain unix timestamps with milliseconds.  The time table could get unreasonably large if we left it as a datetime.  If we were to actually populate the time dimension using the datetime, it would have 86,400,000 ms per day!  This is not sustainable.  We will drop the ms values and have 86,400 rows in the time and start with 10 years in the date table. This is roughly 3652 rows depending on leap days.
 
+
 These changes ensure that the data warehouse is stable, efficient, and follows best practices.
+
+Below is my design for the star schema:
+
+![dw-design](udacity-dw.png)
