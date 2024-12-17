@@ -1,23 +1,24 @@
 # Udacity Project - Sparkify Data Warehouse
+Note: text in italic font is from the project instructions on udacity.
 
-# Introduction (from udacity)
+# Introduction 
 
-A music streaming startup, Sparkify, has grown their user base and song database and want to move their processes and data onto the cloud. Their data resides in S3, in a directory of JSON logs on user activity on the app, as well as a directory with JSON metadata on the songs in their app.
+*A music streaming startup, Sparkify, has grown their user base and song database and want to move their processes and data onto the cloud. Their data resides in S3, in a directory of JSON logs on user activity on the app, as well as a directory with JSON metadata on the songs in their app.*
 
-As their data engineer, you are tasked with building an ETL pipeline that extracts their data from S3, stages them in Redshift, and transforms data into a set of dimensional tables for their analytics team to continue finding insights into what songs their users are listening to.
+*As their data engineer, you are tasked with building an ETL pipeline that extracts their data from S3, stages them in Redshift, and transforms data into a set of dimensional tables for their analytics team to continue finding insights into what songs their users are listening to.*
 
-# Data Warehouse Design
+# Part 1 - Data Warehouse Design
 
 Before starting this project, we need to see what data we have and what we are asked to find.  Data warehouses are built to facilitate answering business users' questions.  Some of these questions may be unknown to the user at the time of development.  Therefore, it's important to select the appropriate grain for our fact table and make sure that we have conforming dimension tables.  In this project, it is fairly straightforward since we are given a single fact of song plays. 
 
-# Step 1 - Inspect the Data
+## Step 1 - Inspect the Data
 
 The data reside in "s3://udacity-dend/song_data" (song_data) and "s3://udacity-dend/log_data" (log_data)
 
 **Song Data**
-(from udadicy) *The first dataset is a subset of real data from the Million Song Dataset(opens in a new tab). Each file is in JSON format and contains metadata about a song and the artist of that song. The files are partitioned by the first three letters of each song's track ID. For example, here are file paths to two files in this dataset.*
+*The first dataset is a subset of real data from the Million Song Dataset(opens in a new tab). Each file is in JSON format and contains metadata about a song and the artist of that song. The files are partitioned by the first three letters of each song's track ID. For example, here are file paths to two files in this dataset.*
 
-An example song is: {"num_songs": 1, "artist_id": "ARJIE2Y1187B994AB7", "artist_latitude": null, "artist_longitude": null, "artist_location": "", "artist_name": "Line Renaud", "song_id": "SOUPIRU12A6D4FA1E1", "title": "Der Kleine Dompfaff", "duration": 152.92036, "year": 0}
+An example song is: *{"num_songs": 1, "artist_id": "ARJIE2Y1187B994AB7", "artist_latitude": null, "artist_longitude": null, "artist_location": "", "artist_name": "Line Renaud", "song_id": "SOUPIRU12A6D4FA1E1", "title": "Der Kleine Dompfaff", "duration": 152.92036, "year": 0}*
 
 So, we have the following properties in song_data with my estimated data types:
 
@@ -63,3 +64,17 @@ So, we have the following properties in song_data with my estimated data types:
 | ts                | datetime (Unix timestamp in ms)    |
 | userAgent         | Varchar                            |
 | userId            | int                                |
+
+## Step 2 - Star Schema Design
+
+The project instructions call for the following tables to be includes the following tables:
+
+|Table | Table Type|Columns|
+|-----|-----|----|
+|songplays|fact|songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent|
+|users|dimension|user_id, first_name, last_name, gender, level|
+|songs|dimension|song_id, title, artist_id, year, duration|
+|artists|dimension|artist_id, name, location, latitude, longitude|
+|time|dimension|start_time, hour, day, week, month, year, weekday|
+
+Before going further, there are 
