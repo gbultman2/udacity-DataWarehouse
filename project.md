@@ -68,7 +68,41 @@ Do the following steps in your README.md file. Here's a guide(opens in a new tab
 Example Output From An ETL Run
 Typical Run With Simple Counts To Validate Success
 
-Typical Run With Simple Counts To Validate Success
-Note
 
-The SERIAL command in Postgres is not supported in Redshift. The equivalent in redshift is IDENTITY(0,1), which you can read more on in the Redshift Create Table Docs(opens in a new tab).
+# My Notes
+Before starting, the data looks like this: 
+
+
+song dataset - 
+{"num_songs": 1, "artist_id": "ARJIE2Y1187B994AB7", "artist_latitude": null, "artist_longitude": null, "artist_location": "", "artist_name": "Line Renaud", "song_id": "SOUPIRU12A6D4FA1E1", "title": "Der Kleine Dompfaff", "duration": 152.92036, "year": 0}
+
+num_songs
+artist_id
+artist_latitude
+artist_longitude
+artist_location
+artist_name
+song_id
+title
+duration
+year
+
+logfile: 
+artist
+auth
+firstName
+gender
+itttInSession
+lastName
+length
+level
+location
+method
+page
+registration
+sessionId
+song
+status
+ts
+userAgent
+userId
