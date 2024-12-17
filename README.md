@@ -85,6 +85,7 @@ Before going further, there are some changes we need to make for data warehouse 
 4.  The location properties need to be named according to what they are assigned.  i.e. artist_location, and songplay_location.  This avoids ambiguity for the business user.
 5.  Degenerate natural keys won't be included in the songplay fact table as they are in the dimension tables.
 6.  Level will be in the user dimension only since it is not a measure but rather an attribute of the user.  If we wanted, we could chane the user dimension to a slowly changing dimension where we have effective datetimes. This might be beneficial if we wanted to know something about the user before and after they signed up for service.  But that does not appear to be necessary at this time.
+7.  Indicator columns like is_weekday or am_pm will contain the text "Weekday" or "Weekend" and "AM" or "PM" respectively and not Boolean True or False.  This is a data warehouse best practice since the goal is for ease of use of the business user.
 
 These changes ensure that the data warehouse is stable, efficient, and follows best practices.
 
