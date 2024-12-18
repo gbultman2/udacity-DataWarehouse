@@ -77,6 +77,8 @@ The project instructions call for the following tables to be includes the follow
 |artists|dimension|artist_id, name, location, latitude, longitude|
 |time|dimension|start_time, hour, day, week, month, year, weekday|
 
+### Data Warehouse Best Practices
+
 Before going further, there are some changes we need to make for data warehouse best practices:
 
 1.  Table names should be singular for clarity, simplicity, and consistency.  This is a general best practice for database design.
@@ -87,8 +89,23 @@ Before going further, there are some changes we need to make for data warehouse 
 6.  Level will be in the user dimension only since it is not a measure but rather an attribute of the user.  If we wanted, we could chane the user dimension to a slowly changing dimension where we have effective datetimes. This might be beneficial if we wanted to know something about the user before and after they signed up for service.  But that does not appear to be necessary at this time.
 7.  Indicator columns like is_weekday or am_pm will contain the text "Weekday" or "Weekend" and "AM" or "PM" respectively and not Boolean True or False.  This is a data warehouse best practice since the goal is for ease of use of the business user.
 
-These changes ensure that the data warehouse is stable, efficient, and follows best practices.
+These changes ensure that the data warehouse is stable, efficient, and follows data warehouse best practices.
+
+### Redshift Best Practices
+Now that we have the data warehouse best practices, let's take a look at Redshift best practices: [Redshift Best Practices](https://docs.aws.amazon.com/redshift/latest/dg/c_designing-tables-best-practices.html)
+
+
+### Final Design
 
 Below is my design for the star schema:
 
 ![dw-design](udacity-dw.png)
+
+Notes about Redshift
+- Redshift does not support typical upsert operations. We need to utilize another strategy. Manifests
+- Deduplication?
+
+# Potential Improvements
+
+1. Include data provenance in the database
+2. Include a manifest to control which files in S3 will be inserted. https://docs.aws.amazon.com/redshift/latest/dg/verifying-that-correct-files-are-present.html
