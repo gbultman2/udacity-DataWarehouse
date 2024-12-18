@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Redshift Cluster with IAM Role, Security Group, and S3 Access in Default VPC"
+
+Parameters:
+  MasterUserPassword:
+    Description: "The password for the master user account in the Redshift cluster."
+    Type: String
+    NoEcho: true
+    MinLength: 8
+    MaxLength: 64
+    AllowedPattern: "^[a-zA-Z0-9@#$%^&*()_+=-]*$"
+    ConstraintDescription: "Password must be 8-64 characters long and contain only alphanumeric and special characters."
+
+Resources:
+  DefaultVpc:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      Tags:
+        - Key: "Name"
+          Value: "DefaultVPC"
+    Metadata:
+      AWS::CloudFormation::PseudoParameters:
+        VPCId: "default"
+
+  RedshiftS3AccessRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "redshift.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+        - "arn:aws:iam::aws:policy/AmazonRedshiftFullAccess"
+
+  RedshiftSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Allow Redshift access on port 5439"
+      VpcId: !Ref DefaultVpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5439
+          ToPort: 5439
+          CidrIp: "0.0.0.0/0" # Adjust for better security in production
+
+  RedshiftCluster:
+    Type: "AWS::Redshift::Cluster"
+    Properties:
+      ClusterType: "multi-node"
+      NodeType: "dc2.large"
+      NumberOfNodes: 2
+      MasterUsername: "admin"
+      MasterUserPassword: !Ref MasterUserPassword
+      DBName: "mydb"
+      ClusterIdentifier: "my-redshift-cluster"
+      IamRoles:
+        - !GetAtt RedshiftS3AccessRole.Arn
+      VpcSecurityGroupIds:
+        - !Ref RedshiftSecurityGroup
+
+Outputs:
+  ClusterEndpoint:
+    Description: "Endpoint of the Redshift Cluster"
+    Value: !GetAtt RedshiftCluster.Endpoint.Address
+
+  IAMRoleARN:
+    Description: "ARN of the IAM Role for Redshift S3 Access"
+    Value: !GetAtt RedshiftS3AccessRole.Arn
+
+  SecurityGroupId:
+    Description: "Security Group ID for the Redshift Cluster"
+    Value: !Ref RedshiftSecurityGroup
