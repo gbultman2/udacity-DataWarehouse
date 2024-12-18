@@ -83,7 +83,7 @@ Before going further, there are some changes we need to make for data warehouse 
 
 1.  Table names should be singular for clarity, simplicity, and consistency.  This is a general best practice for database design.
 2.  Using natural keys like song_id, user_id, artist_id from the source data as a primary keys in the data warehouse is not a good idea.  We need to implement surrogate keys (system generated keys) in the data warehouse as a best practice.  This future proofs the schema in case of new data sources, software updates, etc.  We will keep the natural keys in the data as degenerate keys for reference.
-3.  The time dimension should be split into separate date and time dimensions. The data contain unix timestamps with milliseconds.  The time table could get unreasonably large if we left it as a datetime.  If we were to actually populate the time dimension using the datetime, it would have 86,400,000 ms per day!  This is not sustainable.  We will drop the ms values and have 86,400 rows in the time and start with 10 years in the date table. This is roughly 3652 rows depending on leap days.
+3.  The time dimension should be split into separate date and time dimensions. The data contain unix timestamps with milliseconds.  The time table could get unreasonably large if we left it as a datetime.  If we were to actually populate the time dimension using the datetime, it would have 86,400,000 ms per day!  This is not sustainable.  We will drop the ms values and have 86,400 rows in the time and start with 10 years in the date table. This is roughly 3652 rows depending on leap days.  **We will pre-populate these tables.**
 4.  The location properties need to be named according to what they are assigned.  i.e. artist_location, and songplay_location.  This avoids ambiguity for the business user.
 5.  Degenerate natural keys won't be included in the songplay fact table as they are in the dimension tables.
 6.  Level will be in the user dimension only since it is not a measure but rather an attribute of the user.  If we wanted, we could chane the user dimension to a slowly changing dimension where we have effective datetimes. This might be beneficial if we wanted to know something about the user before and after they signed up for service.  But that does not appear to be necessary at this time.
@@ -113,7 +113,7 @@ Notes about Redshift
 - Redshift does not support typical upsert operations. We need to utilize another strategy. Manifests
 - Deduplication?
 
-# Step 3 - Extract Transform Load (ETL)
+# Part 2 - Extract Transform Load (ETL) Design
 
 Now that we have the initial design for the staging tables and star schema for our data warehouse, it's time to plan the ETL process. One of the key considerations of an ETL process is that we only perform incremental loading.  That's to say that we don't want to load the same data over and over again.  
 
@@ -123,14 +123,46 @@ We'll follow along with *some* of the [Redshift Data Loading Best Practices](htt
 2.  Verify data files before and after a load - We'll use a manifest file to ensure that we're loading the proper files.  After the load we can verify which files were committed using the system tables.  Then we will update the manifest.
 
 
-# Step 4 - Set up and Execute
+# Part 3 - Set up and Execute
 
-Since we're only allotted a small amount of money for this project in udacity, I will use a cloud formation template to build and tear down the infrastructure.  This is a best practice anyway.
+**Step 1:** Execute the cloud formation template
 
-So, we will upload this file to cloudformation and execute it.
+Since we're only allotted a small amount of money for this project in udacity, I will use a cloud formation template to build and tear down the infrastructure.  This is a best practice anyway.  I will create the stack on us-west-2 where the data for songs S3 bucket is located. Once you create the stack, navigate to the outputs section.  You will use this in the next step.
+
 [Cloud Formation Template](redshift_iac.yaml)
+
+**Step 2:** Fill out the config file: 
+
+Next we need to fill in the variables in our config file so that we can begin populating the database.  You should still have the cloud formation up.  Navigate to the outputs and begin filling out the following file
+
+[config file](dwh.cfg)
+
+`HOST` - should look like my-redshift-cluster.xxxxxxxxxxx.us-west-2.redshift.amazonaws.com/
+
+`DB_PASSWORD` - this is the password you provided in the cloud formation
+
+`ARN` - This is the ARN for the IAM role the cloud formation template created.  Something like arn:aws:iam::xxxxx:role/redshift-stack-RedshiftS3AccessRole-xxxxx
+
+`MANIFEST_BUCKET` - This is the bucket name for the bucket you created in the cloud formation template.
+
+`MANIFEST_LOG` is the name you want for the log file manifest - it should be a .json file.
+
+`MANIFEST_SONG` is the name you want for the song-data manifest - it should be a .json file.
+
+**Step 3:** Create the tables
+
+Run the file that creates the tables in the database.  This should create the tables we designed in part 1.
+
+[create_database](create_tables.py)
+
+**Step 4:** Run the ETL
+
+The following script should create a manifest which details the files we have yet to upload to our data warehouse.  This ensures that we don't load the same data files multiple times.  Once we have the files needed, the script will execute a COPY command that copies the data from S3 and puts it into our staging tables.  Once that is complete, the script will insert data into our data warehouse.
+
+[ETL Script](etl.py)
+
+**Step 5:** Run some queries on the data.
 
 # Potential Improvements
 
-1. Include data provenance in the database
-2. Include a manifest to control which files in S3 will be inserted. https://docs.aws.amazon.com/redshift/latest/dg/verifying-that-correct-files-are-present.html
+1. Make the user table a slowly changing dimension with effective dates to establish when a user converts to a paid level.
