@@ -145,10 +145,6 @@ Next we need to fill in the variables in our config file so that we can begin po
 
 `MANIFEST_BUCKET` - This is the bucket name for the bucket you created in the cloud formation template.
 
-`MANIFEST_LOG` is the name you want for the log file manifest - it should be a .json file.
-
-`MANIFEST_SONG` is the name you want for the song-data manifest - it should be a .json file.
-
 **Step 3:** Create the tables
 
 Run the file that creates the tables in the database.  This should create the tables we designed in part 1.
