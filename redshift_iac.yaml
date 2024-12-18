@@ -12,16 +12,6 @@ Parameters:
     ConstraintDescription: "Password must be 8-64 characters long and contain only alphanumeric and special characters."
 
 Resources:
-  DefaultVpc:
-    Type: "AWS::EC2::VPC"
-    Properties:
-      Tags:
-        - Key: "Name"
-          Value: "DefaultVPC"
-    Metadata:
-      AWS::CloudFormation::PseudoParameters:
-        VPCId: "default"
-
   RedshiftS3AccessRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -40,12 +30,12 @@ Resources:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: "Allow Redshift access on port 5439"
-      VpcId: !Ref DefaultVpc
+      VpcId: "vpc-0cf4d84db63ecee23"  
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 5439
           ToPort: 5439
-          CidrIp: "0.0.0.0/0" # Adjust for better security in production
+          CidrIp: "0.0.0.0/0" 
 
   RedshiftCluster:
     Type: "AWS::Redshift::Cluster"
