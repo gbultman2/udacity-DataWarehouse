@@ -94,6 +94,14 @@ These changes ensure that the data warehouse is stable, efficient, and follows d
 ### Redshift Best Practices
 Now that we have the data warehouse best practices, let's take a look at Redshift best practices: [Redshift Best Practices](https://docs.aws.amazon.com/redshift/latest/dg/c_designing-tables-best-practices.html)
 
+1.  **Sort Keys** - we need to pick a sort key since that is how Redshift stores data on disk and how the query optimizer works.
+    - The option to use the join column as a sort key on most of the table seems appropriate since the queries we'll be doing have several joins on the fact table.  However, in the interest of time on this project, I'll select the `AUTO` option.
+2.  **Distribution Style** - From the AWS help file: When you run a query, the query optimizer redistributes the rows to the compute nodes as needed to perform any joins and aggregations. The goal in selecting a table distribution style is to minimize the impact of the redistribution step by locating the data where it needs to be before the query is run.
+    - Since I am using `AUTO` optimization, I don't need to do anything here.
+3. **Automatic Compression** - ENCODE AUTO is the default and we will leave it that way.
+4. **Design Constraints** - Redshift doesn't actually use the constraints on tables for anything other than information.  [Redshift Table Constraints](https://docs.aws.amazon.com/redshift/latest/dg/t_Defining_constraints.html)
+5. **Use Smallest possible column size** - This affects definitions for the `VARCHAR` type.  We want to use an appropriate size for every `VARCHAR` column.
+6. **Use Date/Time data types for date columns** - We will need to use this in our date and time tables when we insert from the staging tables.
 
 ### Final Design
 
