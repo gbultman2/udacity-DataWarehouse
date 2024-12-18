@@ -107,7 +107,7 @@ Now that we have the data warehouse best practices, let's take a look at Redshif
 
 Below is my design for the star schema:
 
-![dw-design](udacity-dw.png)
+![dw-design-new](udacity-dw.png)
 
 Notes about Redshift
 - Redshift does not support typical upsert operations. We need to utilize another strategy. Manifests
