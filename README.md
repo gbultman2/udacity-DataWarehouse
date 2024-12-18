@@ -147,7 +147,7 @@ Next we need to fill in the variables in our config file so that we can begin po
 
 **Step 3:** Create the tables
 
-Run the file that creates the tables in the database.  This should create the tables we designed in part 1.
+Run the file that creates the tables in the database.  This should create the tables we designed in part 1.  Note that the user that you created will need access to write to your S3 Manifest bucket that we created.
 
 [create_database](create_tables.py)
 
@@ -158,6 +158,15 @@ The following script should create a manifest which details the files we have ye
 [ETL Script](etl.py)
 
 **Step 5:** Run some queries on the data.
+
+You can run some queries on the database to see what we've done.
+[Query Script](query_db.py)
+
+Console Output
+```
+
+```
+
 
 # Potential Improvements
 
