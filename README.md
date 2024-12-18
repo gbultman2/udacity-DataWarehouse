@@ -113,6 +113,23 @@ Notes about Redshift
 - Redshift does not support typical upsert operations. We need to utilize another strategy. Manifests
 - Deduplication?
 
+# Step 3 - Extract Transform Load (ETL)
+
+Now that we have the initial design for the staging tables and star schema for our data warehouse, it's time to plan the ETL process. One of the key considerations of an ETL process is that we only perform incremental loading.  That's to say that we don't want to load the same data over and over again.  
+
+We'll follow along with *some* of the [Redshift Data Loading Best Practices](https://docs.aws.amazon.com/redshift/latest/dg/c_loading-data-best-practices.html)
+
+1.  COPY command.  Since we're extracting data from S3, we will use the COPY command to load data into our staging tables.  It is much more efficient than INSERT commands.
+2.  Verify data files before and after a load - We'll use a manifest file to ensure that we're loading the proper files.  After the load we can verify which files were committed using the system tables.  Then we will update the manifest.
+
+
+# Step 4 - Set up and Execute
+
+Since we're only allotted a small amount of money for this project in udacity, I will use a cloud formation template to build and tear down the infrastructure.  This is a best practice anyway.
+
+So, we will upload this file to cloudformation and execute it.
+[Cloud Formation Template](redshift_iac.yaml)
+
 # Potential Improvements
 
 1. Include data provenance in the database
