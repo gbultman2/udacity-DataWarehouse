@@ -145,7 +145,15 @@ Next we need to fill in the variables in our config file so that we can begin po
 
 `MANIFEST_BUCKET` - This is the bucket name for the bucket you created in the cloud formation template.
 
-**Step 3:** Create the tables
+**Step 3:**
+
+Upload the following files to the s3 bucket you created in the previous step, `MANIFEST_BUCKET`, :
+[file 1](data/log_jsonpath.json)
+[file 2](data/song_data_paths.json)
+
+These files tell Redshift how to read the json files when we use the COPY command.
+
+**Step 4:** Create the tables
 
 Run the file that creates the tables in the database.  This should create the tables we designed in part 1.  Note that the user that you created will need access to write to your S3 Manifest bucket that we created.
 
@@ -153,7 +161,7 @@ Run the file that creates the tables in the database.  This should create the ta
 
 Inspect the log file to make sure that all the tables were created: [create_tables_log](logs/create_tables.log)
 
-**Step 4:** Run the ETL
+**Step 5:** Run the ETL
 
 The following script should create a manifest which details the files we have yet to upload to our data warehouse.  This ensures that we don't load the same data files multiple times.  Once we have the files needed, the script will execute a COPY command that copies the data from S3 and puts it into our staging tables.  Once that is complete, the script will insert data into our data warehouse.
 
@@ -161,7 +169,7 @@ The following script should create a manifest which details the files we have ye
 
 Inspect the logs to make sure that the data was inserted into the warehouse: [ETL log](logs/etl.log)
 
-**Step 5:** Run some queries on the data.
+**Step 6:** Run some queries on the data.
 
 You can run some queries on the database to see what we've done.
 [Query Script](query_db.py)
@@ -175,3 +183,5 @@ Console Output
 # Potential Improvements
 
 1. Make the user table a slowly changing dimension with effective dates to establish when a user converts to a paid level.
+2. If I had access to the song play folder on a regular basis, I would combine songplay information into a single json by day and put it into another folder.  The current process of having a single line json is way too slow.
+3. I would fix the encoding on the source data so that special characters are stored properly and in a consistent format.
