@@ -137,7 +137,7 @@ Next we need to fill in the variables in our config file so that we can begin po
 
 [config file](dwh.cfg)
 
-`HOST` - should look like my-redshift-cluster.xxxxxxxxxxx.us-west-2.redshift.amazonaws.com/
+`HOST` - This is the `Cluster Endpoint` should look like my-redshift-cluster.xxxxxxxxxxx.us-west-2.redshift.amazonaws.com/
 
 `DB_PASSWORD` - this is the password you provided in the cloud formation
 
