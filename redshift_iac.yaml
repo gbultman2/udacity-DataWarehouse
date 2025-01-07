@@ -11,7 +11,32 @@ Parameters:
     AllowedPattern: "^[a-zA-Z0-9@#$%^&*()_+=-]*$"
     ConstraintDescription: "Password must be 8-64 characters long and contain only alphanumeric and special characters."
 
+  BucketName:
+    Description: "Name of the S3 bucket for the manifest."
+    Type: String
+    MinLength: 3
+    MaxLength: 63
+    AllowedPattern: "^[a-z0-9.-]*$"
+    ConstraintDescription: "Bucket name must be 3-63 characters long and contain only lowercase letters, numbers, periods, and dashes."
+
+  VpcId:
+    Description: "VPC ID for the Redshift Security Group."
+    Type: String
+    MinLength: 1
+    MaxLength: 64
+    AllowedPattern: "^vpc-[a-zA-Z0-9]+$"
+    ConstraintDescription: "Must be a valid VPC ID (e.g., vpc-xxxxxxxx)."
+
 Resources:
+  ManifestBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Ref BucketName
+      AccessControl: "Private"
+      Tags:
+        - Key: "Purpose"
+          Value: "Redshift Manifest Bucket"
+
   RedshiftS3AccessRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -30,12 +55,12 @@ Resources:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: "Allow Redshift access on port 5439"
-      VpcId: "vpc-0cf4d84db63ecee23"  
+      VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 5439
           ToPort: 5439
-          CidrIp: "0.0.0.0/0" 
+          CidrIp: "0.0.0.0/0"
 
   RedshiftCluster:
     Type: "AWS::Redshift::Cluster"
@@ -45,7 +70,7 @@ Resources:
       NumberOfNodes: 2
       MasterUsername: "admin"
       MasterUserPassword: !Ref MasterUserPassword
-      DBName: "mydb"
+      DBName: "sparkify"
       ClusterIdentifier: "my-redshift-cluster"
       IamRoles:
         - !GetAtt RedshiftS3AccessRole.Arn
@@ -64,3 +89,7 @@ Outputs:
   SecurityGroupId:
     Description: "Security Group ID for the Redshift Cluster"
     Value: !Ref RedshiftSecurityGroup
+
+  ManifestBucketName:
+    Description: "Name of the Manifest S3 Bucket"
+    Value: !Ref ManifestBucket

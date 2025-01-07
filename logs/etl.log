@@ -1,0 +1,120 @@
+
+
+2024-12-21 09:46:49,150 - INFO - fetching song log manifest
+2024-12-21 09:46:50,708 - INFO - Song log manifest completed in 1.56 seconds
+2024-12-21 09:46:50,708 - INFO - Fetching song data manifest
+2024-12-21 09:48:11,969 - INFO - Song data manifest completed in 81.26 seconds
+2024-12-21 09:48:12,524 - INFO - beginning staging
+2024-12-21 09:48:13,130 - INFO - Loading Staging table with query: 
+COPY staging_song_log
+FROM 's3://mymanifestbucket-gb2/log_manifest.json'
+IAM_ROLE {removed}
+FORMAT AS JSON 's3://udacity-dend/log_json_path.json'
+MANIFEST
+REGION 'us-west-2';
+
+2024-12-21 09:48:18,709 - INFO - staging query completed in 5.58 seconds
+2024-12-21 09:48:18,709 - INFO - Loading Staging table with query: 
+COPY staging_song_data
+FROM 's3://udacity-dend/song-data'
+IAM_ROLE {removed}
+FORMAT AS JSON 's3://mymanifestbucket-gb2/song_data_paths.json'
+REGION 'us-west-2'
+MAXERROR 100;
+
+2024-12-21 13:13:21,970 - INFO - staging query completed in 12303.26 seconds
+2024-12-21 13:13:21,971 - INFO - Staging tables loaded in 12309.45 seconds
+2024-12-21 13:13:21,971 - INFO - beginning inserts
+2024-12-21 13:13:23,175 - INFO - Loading Star tables with query: 
+INSERT INTO dim_user (user_id, user_first_name, user_last_name, user_gender, user_level)
+SELECT DISTINCT
+    sl.userId AS user_id
+    , sl.firstName AS user_first_name
+    , sl.lastName AS user_last_name
+    , sl.gender AS user_gender
+    , sl.level AS user_level
+FROM staging_song_log AS sl
+WHERE sl.artist IS NOT NULL -- We don't care about users who don't listen to music;   
+
+2024-12-21 13:13:24,051 - INFO - Loading Star tables with query: 
+INSERT INTO dim_artist (artist_id, 
+                        artist_name, 
+                        artist_location, 
+                        artist_latitude,
+                        artist_longitude)
+SELECT DISTINCT 
+    sd.artist_id AS artist_id
+    ,sd.artist_name AS artist_name
+    ,sd.artist_location AS artist_location
+    ,sd.artist_latitude AS artist_latitude
+    ,sd.artist_longitude AS artist_longitude
+FROM staging_song_data AS sd
+WHERE sd.artist_name IS NOT NULL;
+
+2024-12-21 13:13:24,945 - INFO - Loading Star tables with query: 
+INSERT INTO dim_song (artist_key,
+                      song_id, 
+                      artist_id,
+                      song_title,
+                      song_year, 
+                      song_duration)
+SELECT DISTINCT
+    da.artist_key AS artist_key
+    ,sd.song_id AS song_id
+    ,sd.artist_id AS artist_id
+    ,sd.title AS song_title
+    ,sd.year AS song_year
+    ,sd.duration AS song_duration
+FROM staging_song_data AS sd
+LEFT JOIN dim_artist AS da
+    ON da.artist_id = sd.artist_id
+    AND da.artist_name = sd.artist_name -- Ensures that we get a proper match in case of a new data source
+    AND da.artist_location = sd.artist_location --Ensures that we get a proper match in case of a new data source;
+WHERE sd.artist_id IS NOT NULL
+
+2024-12-21 13:13:40,327 - INFO - Loading Star tables with query: 
+INSERT INTO fact_songplay (start_date_key,
+                           start_time_key, 
+                           user_key, 
+                           artist_key, 
+                           song_key, 
+                           start_datetime,
+                           auth, 
+                           session_id, 
+                           item_in_session, 
+                           method, 
+                           page, 
+                           status, 
+                           user_agent, 
+                           songplay_location, 
+                           registration)
+SELECT DISTINCT
+    CAST(TO_CHAR(TIMESTAMP 'epoch' + ts/1000 * INTERVAL '1 second', 'YYYYMMDD') AS INTEGER) AS start_date_key
+    ,CAST(TO_CHAR(TIMESTAMP 'epoch' + ts/1000 * INTERVAL '1 second', 'HH24MISS') AS INTEGER) AS start_time_key
+    ,u.user_key AS user_key
+    , a.artist_key AS artist_key
+    , s.song_key AS song_key
+    , TIMESTAMP 'epoch' + ts/1000 * INTERVAL '1 second' AS start_datetime
+    , sl.auth AS auth
+    , sl.sessionId AS session_id
+    , sl.ItemInSession AS item_in_session
+    , sl.method AS method
+    , sl.page AS page
+    , sl.status AS status
+    , sl.userAgent AS user_agent
+    , sl.location AS songplay_location
+    , sl.registration AS registration
+FROM staging_song_log sl
+LEFT JOIN dim_user AS u
+    ON sl.userId = u.user_id
+LEFT JOIN dim_artist AS a
+    ON sl.artist = a.artist_name
+LEFT JOIN dim_song AS s
+    ON sl.song = s.song_title 
+        AND a.artist_id = s.artist_id
+WHERE sl.artist IS NOT NULL
+    AND sl.userId IS NOT NULL
+    AND a.artist_id IS NOT NULL;
+
+2024-12-21 13:13:53,669 - INFO - completed insert actions
+2024-12-21 13:13:53,669 - INFO - Insert actions completed in 31.70 seconds

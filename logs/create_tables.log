@@ -1,0 +1,142 @@
+2024-12-21 09:38:05,351 - INFO - Starting table creation process
+2024-12-21 09:38:06,015 - INFO - Dropping table with query: DROP TABLE IF EXISTS staging_song_log
+2024-12-21 09:38:06,255 - INFO - Dropping table with query: DROP TABLE IF EXISTS staging_song_data
+2024-12-21 09:38:06,505 - INFO - Dropping table with query: DROP TABLE IF EXISTS fact_songplay;
+2024-12-21 09:38:06,744 - INFO - Dropping table with query: DROP TABLE IF EXISTS dim_user;
+2024-12-21 09:38:06,985 - INFO - Dropping table with query: DROP TABLE IF EXISTS dim_song;
+2024-12-21 09:38:07,229 - INFO - Dropping table with query: DROP TABLE IF EXISTS dim_artist;
+2024-12-21 09:38:07,470 - INFO - Dropping table with query: DROP TABLE IF EXISTS dim_time;
+2024-12-21 09:38:07,709 - INFO - Dropping table with query: DROP TABLE IF EXISTS dim_date;
+2024-12-21 09:38:07,950 - INFO - Creating table with query: 
+CREATE TABLE IF NOT EXISTS staging_song_log (
+    song_log_id BIGINT IDENTITY(1,1) PRIMARY KEY
+    ,artist VARCHAR
+    ,auth VARCHAR
+    ,firstName VARCHAR
+    ,gender VARCHAR
+    ,itemInSession INT
+    ,lastName VARCHAR
+    ,length DOUBLE PRECISION
+    ,level VARCHAR
+    ,location VARCHAR
+    ,method VARCHAR
+    ,page VARCHAR
+    ,registration BIGINT
+    ,sessionId INT
+    ,song VARCHAR
+    ,status INT
+    ,ts BIGINT
+    ,userAgent VARCHAR
+    ,userId INT
+    );
+
+2024-12-21 09:38:08,288 - INFO - Creating table with query: 
+CREATE TABLE IF NOT EXISTS staging_song_data(
+    song_data_id BIGINT IDENTITY(1,1) PRIMARY KEY
+    ,num_songs INT
+    ,artist_id VARCHAR
+    ,artist_latitude DOUBLE PRECISION
+    ,artist_longitude DOUBLE PRECISION
+    ,artist_location VARCHAR(1000)
+    ,artist_name VARCHAR(1000)
+    ,song_id VARCHAR
+    ,title VARCHAR
+    ,duration DOUBLE PRECISION
+    ,year INT
+)
+
+2024-12-21 09:38:08,625 - INFO - Creating table with query: 
+CREATE TABLE IF NOT EXISTS dim_time (
+    time_key INT PRIMARY KEY
+    , time_key_sql TIME
+    , hour INT
+    , minute INT
+    , second INT
+    , am_pm VARCHAR(2)
+);
+
+2024-12-21 09:38:08,944 - INFO - Creating table with query: 
+CREATE TABLE IF NOT EXISTS dim_date (
+    date_key INT PRIMARY KEY
+    ,date_key_sql DATE
+    ,week INT
+    ,month VARCHAR
+    ,year INT
+    ,is_weekday VARCHAR(8)
+);
+
+2024-12-21 09:38:09,278 - INFO - Creating table with query: 
+CREATE TABLE IF NOT EXISTS dim_user (
+    user_key BIGINT IDENTITY(1,1) PRIMARY KEY
+    ,user_id INT
+    ,user_first_name VARCHAR
+    ,user_last_name VARCHAR
+    ,user_gender VARCHAR(1)
+    ,user_level VARCHAR
+);
+
+2024-12-21 09:38:09,608 - INFO - Creating table with query: 
+CREATE TABLE IF NOT EXISTS dim_artist (
+    artist_key BIGINT IDENTITY(1,1) PRIMARY KEY
+    ,artist_id VARCHAR
+    ,artist_name VARCHAR(1000)
+    ,artist_location VARCHAR(1000)
+    ,artist_longitude DOUBLE PRECISION
+    ,artist_latitude DOUBLE PRECISION
+);
+
+2024-12-21 09:38:09,975 - INFO - Creating table with query: 
+CREATE TABLE IF NOT EXISTS dim_song (
+    song_key BIGINT IDENTITY(1,1) PRIMARY KEY
+    ,artist_key BIGINT 
+    ,song_id VARCHAR
+    ,artist_id VARCHAR
+    ,song_title VARCHAR
+    ,song_year INT
+    ,song_duration DOUBLE PRECISION
+    ,FOREIGN KEY (artist_key) REFERENCES dim_artist(artist_key)
+);
+
+2024-12-21 09:38:10,356 - INFO - Creating table with query: 
+CREATE TABLE IF NOT EXISTS fact_songplay (
+    songplay_key BIGINT IDENTITY(1,1) PRIMARY KEY
+    ,start_date_key INT
+    ,start_time_key INT
+    ,user_key INT 
+    ,artist_key INT
+    ,song_key INT
+    ,start_datetime TIMESTAMP 
+    , auth VARCHAR
+    , session_id BIGINT
+    , item_in_session INT
+    , method VARCHAR
+    , page VARCHAR
+    , status INT
+    , user_agent VARCHAR
+    , songplay_location VARCHAR
+    , registration BIGINT
+    ,FOREIGN KEY (start_date_key) REFERENCES dim_date(date_key)
+    ,FOREIGN KEY (start_time_key) REFERENCES dim_time(time_key)
+    ,FOREIGN KEY (user_key) REFERENCES dim_user(user_key)
+    ,FOREIGN KEY (artist_key) REFERENCES dim_artist(artist_key)
+    ,FOREIGN KEY (song_key) REFERENCES dim_song(song_key)
+);
+
+2024-12-21 09:38:10,715 - INFO - Uploading date-time tables to S3
+2024-12-21 09:38:12,133 - INFO - Populating date-time table with query: 
+COPY dim_date
+FROM 's3://mymanifestbucket-gb2/dim_date.csv'
+IAM_ROLE {removed}
+FORMAT AS CSV
+IGNOREHEADER 1
+REGION 'us-west-2';
+
+2024-12-21 09:38:13,392 - INFO - Populating date-time table with query: 
+COPY dim_time
+FROM 's3://mymanifestbucket-gb2/dim_time.csv'
+IAM_ROLE {removed}
+FORMAT AS CSV 
+IGNOREHEADER 1
+REGION 'us-west-2';
+
+2024-12-21 09:38:14,786 - INFO - Tables created successfully
