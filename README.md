@@ -151,11 +151,15 @@ Run the file that creates the tables in the database.  This should create the ta
 
 [create_database](create_tables.py)
 
+Inspect the log file to make sure that all the tables were created: [create_tables_log](logs/create_tables.log)
+
 **Step 4:** Run the ETL
 
 The following script should create a manifest which details the files we have yet to upload to our data warehouse.  This ensures that we don't load the same data files multiple times.  Once we have the files needed, the script will execute a COPY command that copies the data from S3 and puts it into our staging tables.  Once that is complete, the script will insert data into our data warehouse.
 
 [ETL Script](etl.py)
+
+Inspect the logs to make sure that the data was inserted into the warehouse: [ETL log](logs/etl.log)
 
 **Step 5:** Run some queries on the data.
 
