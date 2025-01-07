@@ -1,5 +1,4 @@
 # Udacity Project - Sparkify Data Warehouse
-Note: text in italic font is from the project instructions on udacity.
 
 # Introduction 
 
@@ -184,4 +183,5 @@ Console Output
 
 1. Make the user table a slowly changing dimension with effective dates to establish when a user converts to a paid level.
 2. If I had access to the song play folder on a regular basis, I would combine songplay information into a single json by day and put it into another folder.  The current process of having a single line json is way too slow.
-3. I would fix the encoding on the source data so that special characters are stored properly and in a consistent format.
+3. Fix the encoding on the source data so that special characters are stored properly and in a consistent format.
+4. The requirement to use redshift makes you have to set up and tear down infrastructure to limit costs.  The data we used could have been put in a free tier RDS much easier. 
