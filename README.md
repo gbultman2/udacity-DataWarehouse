@@ -175,7 +175,20 @@ You can run some queries on the database to see what we've done.
 
 Console Output
 ```
-
+Query: SELECT COUNT(*) from staging_song_log -> Count: 8056
+Query: SELECT COUNT(*) FROM staging_song_data -> Count: 385251
+Query: SELECT COUNT(*) FROM dim_user -> Count: 104
+Query: SELECT COUNT(*) FROM dim_artist -> Count: 45266
+Query: SELECT COUNT(*) FROM dim_song -> Count: 387367
+Query: SELECT COUNT(*) FROM fact_songplay -> Count: 13549
+Query: SELECT COUNT(*) FROM dim_time -> Count: 86400
+Query: SELECT COUNT(*) FROM dim_date -> Count: 4018
+  is_weekday   song_title   artist_name  songplay_count
+0    Weekday     Stronger    Kanye West             160
+1    Weekend  Greece 2000  Three Drives              48
+  am_pm  song_plays
+0    AM        1056
+1    PM        1603
 ```
 
 
