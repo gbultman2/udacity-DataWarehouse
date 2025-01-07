@@ -42,7 +42,7 @@ So, we have the following properties in song_data with my estimated data types:
 
 *The log files in the dataset you'll be working with are partitioned by year and month. For example, here are file paths to two files in this dataset.*
 
-![logdata](log-data.png)
+![logdata](img/log-data.png)
 
 | Column Name       | Data Type                           |
 |-------------------|-------------------------------------|
@@ -107,7 +107,7 @@ Now that we have the data warehouse best practices, let's take a look at Redshif
 
 Below is my design for the star schema:
 
-![dw-design-new](udacity-dw-update.png)
+![dw-design-new](img/udacity-dw-update.png)
 
 Notes about Redshift
 - Redshift does not support typical upsert operations. We need to utilize another strategy. Manifests
