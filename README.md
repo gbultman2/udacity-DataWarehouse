@@ -160,7 +160,7 @@ Run the file that creates the tables in the database.  This should create the ta
 
 Inspect the log file to make sure that all the tables were created: [create_tables_log](logs/create_tables.log)
 
-**Step 5:** Run the ETL
+**Step 5:** Run the ETL (This step takes approximately 3.5 hours)
 
 The following script should create a manifest which details the files we have yet to upload to our data warehouse.  This ensures that we don't load the same data files multiple times.  Once we have the files needed, the script will execute a COPY command that copies the data from S3 and puts it into our staging tables.  Once that is complete, the script will insert data into our data warehouse.
 
