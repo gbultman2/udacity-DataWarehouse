@@ -1,5 +1,28 @@
 # Udacity Project - Sparkify Data Warehouse
 
+## Table of Contents
+- [Rubric for Project](#rubric-for-project)
+- [Introduction](#introduction)
+- [Part 1 - Data Warehouse Design](#part-1---data-warehouse-design)
+  - [Step 1 - Inspect the Data](#step-1---inspect-the-data)
+  - [Step 2 - Star Schema Design](#step-2---star-schema-design)
+  - [Data Warehouse Best Practices](#data-warehouse-best-practices)
+  - [Redshift Best Practices](#redshift-best-practices)
+  - [Final Design](#final-design)
+- [Part 2 - Extract Transform Load (ETL) Design](#part-2---extract-transform-load-etl-design)
+- [Part 3 - Set up and Execute](#part-3---set-up-and-execute)
+  - [Step 1: Execute the Cloud Formation Template](#step-1-execute-the-cloud-formation-template)
+  - [Step 2: Fill Out the Config File](#step-2-fill-out-the-config-file)
+  - [Step 3: Upload Files to S3 Bucket](#step-3-upload-files-to-s3-bucket)
+  - [Step 4: Create the Tables](#step-4-create-the-tables)
+  - [Step 5: Run the ETL](#step-5-run-the-etl)
+  - [Step 6: Run Queries on the Data](#step-6-run-queries-on-the-data)
+- [Potential Improvements](#potential-improvements)
+  - [Data Design](#data-design)
+  - [Performance](#performance)
+  - [Infrastructure](#infrastructure)
+
+
 # Rubric for Project
 
 Below is the grading rubric for the project. 
