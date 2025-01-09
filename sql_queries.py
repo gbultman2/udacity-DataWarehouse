@@ -1,3 +1,52 @@
+"""
+Module: sql_queries.py.
+
+This module defines SQL queries and query lists for managing and processing
+data in a Redshift data warehouse. The queries are used for creating,
+dropping, populating, and truncating tables in the ETL pipeline.
+
+Configuration:
+--------------
+Reads AWS and Redshift configurations from `dwh.cfg`, including:
+- AWS credentials, region, and IAM roles.
+- S3 bucket and data locations for staging and final tables.
+
+Content:
+--------
+1. Table Definitions:
+    - Staging Tables: Temporary tables for raw data from S3.
+    - Fact Table: `fact_songplay`, containing metrics and measures.
+    - Dimension Tables: `dim_user`, `dim_song`, `dim_artist`, `dim_time`,
+      and `dim_date`.
+
+2. SQL Queries:
+    - DROP TABLE queries: Removes existing tables.
+    - CREATE TABLE queries: Creates staging, fact, and dimension tables.
+    - COPY queries: Loads data into staging and dimension tables.
+    - INSERT queries: Populates fact and dimension tables from staging data.
+    - TRUNCATE queries: Clears tables for debugging or reprocessing.
+
+3. Query Lists:
+    - `create_table_queries`: List of CREATE TABLE statements.
+    - `drop_table_queries`: List of DROP TABLE statements.
+    - `copy_table_queries`: List of COPY commands for data ingestion.
+    - `insert_table_queries`: List of INSERT statements for data loading.
+    - `truncate_staging_table_queries`: List of TRUNCATE commands for staging.
+    - `truncate_star_table_queries`: List of TRUNCATE commands for fact/dim
+    tables.
+    - `populate_datetime_queries`: COPY commands for prepopulated date/time
+    tables.
+
+Execution:
+----------
+This module is imported by other scripts in the ETL pipeline to ensure proper
+table setup and data loading.
+
+Dependencies:
+-------------
+- `configparser`: Reads configurations from `dwh.cfg`.
+- `sql_queries`: Defines reusable SQL statements for Redshift.
+"""
 import configparser
 
 
@@ -9,9 +58,9 @@ AWS_SECRET = config.get("AWS", "SECRET")
 AWS_REGION = config.get("AWS", "REGION")
 IAM_ROLE = config.get("IAM", "ARN")
 DATA_BUCKET = config.get("S3", "DATA_BUCKET")
-LOG_DATA=config.get("S3", "LOG_DATA")
-LOG_JSONPATH=config.get("S3", "LOG_JSONPATH")
-SONG_DATA=config.get("S3", "SONG_DATA")
+LOG_DATA = config.get("S3", "LOG_DATA")
+LOG_JSONPATH = config.get("S3", "LOG_JSONPATH")
+SONG_DATA = config.get("S3", "SONG_DATA")
 MANIFEST_BUCKET = config.get("S3", "MANIFEST_BUCKET")
 MANIFEST_SONG = config.get("S3", "MANIFEST_SONG")
 MANIFEST_LOG = config.get("S3", "MANIFEST_LOG")
@@ -28,7 +77,7 @@ date_table_drop = "DROP TABLE IF EXISTS dim_date;"
 
 # CREATE TABLES
 # The staging tables are just from S3 buckets
-staging_events_table_create= ("""
+staging_events_table_create = ("""
 CREATE TABLE IF NOT EXISTS staging_song_log (
     song_log_id BIGINT IDENTITY(1,1) PRIMARY KEY
     ,artist VARCHAR
@@ -73,10 +122,10 @@ CREATE TABLE IF NOT EXISTS fact_songplay (
     songplay_key BIGINT IDENTITY(1,1) PRIMARY KEY
     ,start_date_key INT
     ,start_time_key INT
-    ,user_key INT 
+    ,user_key INT
     ,artist_key INT
     ,song_key INT
-    ,start_datetime TIMESTAMP 
+    ,start_datetime TIMESTAMP
     , auth VARCHAR
     , session_id BIGINT
     , item_in_session INT
@@ -108,7 +157,7 @@ CREATE TABLE IF NOT EXISTS dim_user (
 song_table_create = ("""
 CREATE TABLE IF NOT EXISTS dim_song (
     song_key BIGINT IDENTITY(1,1) PRIMARY KEY
-    ,artist_key BIGINT 
+    ,artist_key BIGINT
     ,song_id VARCHAR
     ,artist_id VARCHAR
     ,song_title VARCHAR
@@ -161,7 +210,7 @@ MANIFEST
 REGION '{AWS_REGION}';
 """
 
-#This takes roughly 3.5 hours for the initial data load
+# This takes roughly 3.5 hours for the initial data load
 staging_songs_copy = (f"""
 COPY staging_song_data
 FROM 's3://{DATA_BUCKET}/{SONG_DATA}'
@@ -188,7 +237,7 @@ time_table_copy = (f"""
 COPY dim_time
 FROM 's3://{MANIFEST_BUCKET}/dim_time.csv'
 IAM_ROLE '{IAM_ROLE}'
-FORMAT AS CSV 
+FORMAT AS CSV
 IGNOREHEADER 1
 REGION '{AWS_REGION}';
 """)
@@ -203,7 +252,10 @@ REGION '{AWS_REGION}';
 """)
 
 user_table_insert = ("""
-INSERT INTO dim_user (user_id, user_first_name, user_last_name, user_gender, user_level)
+INSERT INTO dim_user (user_id,
+                      user_first_name,
+                      user_last_name,
+                      user_gender, user_level)
 SELECT DISTINCT
     sl.userId AS user_id
     , sl.firstName AS user_first_name
@@ -211,16 +263,16 @@ SELECT DISTINCT
     , sl.gender AS user_gender
     , sl.level AS user_level
 FROM staging_song_log AS sl
-WHERE sl.artist IS NOT NULL -- We don't care about users who don't listen to music;   
+WHERE sl.artist IS NOT NULL;
 """)
 
 artist_table_insert = ("""
-INSERT INTO dim_artist (artist_id, 
-                        artist_name, 
-                        artist_location, 
+INSERT INTO dim_artist (artist_id,
+                        artist_name,
+                        artist_location,
                         artist_latitude,
                         artist_longitude)
-SELECT DISTINCT 
+SELECT DISTINCT
     sd.artist_id AS artist_id
     ,sd.artist_name AS artist_name
     ,sd.artist_location AS artist_location
@@ -232,10 +284,10 @@ WHERE sd.artist_name IS NOT NULL;
 
 song_table_insert = ("""
 INSERT INTO dim_song (artist_key,
-                      song_id, 
+                      song_id,
                       artist_id,
                       song_title,
-                      song_year, 
+                      song_year,
                       song_duration)
 SELECT DISTINCT
     da.artist_key AS artist_key
@@ -247,32 +299,34 @@ SELECT DISTINCT
 FROM staging_song_data AS sd
 LEFT JOIN dim_artist AS da
     ON da.artist_id = sd.artist_id
-    AND da.artist_name = sd.artist_name -- Ensures that we get a proper match in case of a new data source
-    AND da.artist_location = sd.artist_location --Ensures that we get a proper match in case of a new data source;
+    -- Ensures that we get a proper match in case of a new data source
+    AND da.artist_name = sd.artist_name
+    --Ensures that we get a proper match in case of a new data source;
+    AND da.artist_location = sd.artist_location
 WHERE sd.artist_id IS NOT NULL
 """)
 
 
 songplay_table_insert = ("""
 INSERT INTO fact_songplay (start_date_key,
-                           start_time_key, 
-                           user_key, 
-                           artist_key, 
-                           song_key, 
+                           start_time_key,
+                           user_key,
+                           artist_key,
+                           song_key,
                            start_datetime,
-                           auth, 
-                           session_id, 
-                           item_in_session, 
-                           method, 
-                           page, 
-                           status, 
-                           user_agent, 
-                           songplay_location, 
+                           auth,
+                           session_id,
+                           item_in_session,
+                           method,
+                           page,
+                           status,
+                           user_agent,
+                           songplay_location,
                            registration)
 SELECT DISTINCT
     CAST(TO_CHAR(TIMESTAMP 'epoch' + ts/1000 * INTERVAL '1 second', 'YYYYMMDD') AS INTEGER) AS start_date_key
-    ,CAST(TO_CHAR(TIMESTAMP 'epoch' + ts/1000 * INTERVAL '1 second', 'HH24MISS') AS INTEGER) AS start_time_key
-    ,u.user_key AS user_key
+    , CAST(TO_CHAR(TIMESTAMP 'epoch' + ts/1000 * INTERVAL '1 second', 'HH24MISS') AS INTEGER) AS start_time_key
+    , u.user_key AS user_key
     , a.artist_key AS artist_key
     , s.song_key AS song_key
     , TIMESTAMP 'epoch' + ts/1000 * INTERVAL '1 second' AS start_datetime
@@ -291,7 +345,7 @@ LEFT JOIN dim_user AS u
 LEFT JOIN dim_artist AS a
     ON sl.artist = a.artist_name
 LEFT JOIN dim_song AS s
-    ON sl.song = s.song_title 
+    ON sl.song = s.song_title
         AND a.artist_id = s.artist_id
 WHERE sl.artist IS NOT NULL
     AND sl.userId IS NOT NULL
@@ -308,7 +362,7 @@ truncate_user_table = "TRUNCATE TABLE dim_user;"
 truncate_songplay_table = "TRUNCATE TABLE fact_songplay;"
 # no trunc are needed for date and time since those are populated on create
 
-# Other useful queries for processing: 
+# Other useful queries for processing:
 # find out how long on avg it's taking and how many files it did
 query_processing_time = """
 WITH processing_times AS (
@@ -316,7 +370,7 @@ WITH processing_times AS (
         LAG(curtime) OVER (PARTITION BY query ORDER BY curtime) AS previous_time,
         curtime
     FROM stl_load_commits
-    WHERE query = 
+    WHERE query =
 )
 SELECT
     COUNT(*) AS processed_files,
@@ -325,42 +379,40 @@ FROM processing_times
 WHERE previous_time IS NOT NULL;
 """
 
-
-
 # QUERY LISTS
 
-create_table_queries = [staging_events_table_create, 
+create_table_queries = [staging_events_table_create,
                         staging_songs_table_create,
                         time_table_create,
                         date_table_create,
                         user_table_create,
                         artist_table_create,
-                        song_table_create, 
+                        song_table_create,
                         songplay_table_create]
 
-populate_datetime_queries = [date_table_copy, 
+populate_datetime_queries = [date_table_copy,
                              time_table_copy]
 
 drop_table_queries = [staging_events_table_drop,
-                      staging_songs_table_drop, 
+                      staging_songs_table_drop,
                       songplay_table_drop,
                       user_table_drop,
                       song_table_drop,
                       artist_table_drop,
-                      time_table_drop, 
+                      time_table_drop,
                       date_table_drop]
 
-truncate_staging_table_queries = [truncate_staging_events, 
+truncate_staging_table_queries = [truncate_staging_events,
                                   truncate_staging_songs]
-truncate_star_table_queries = [truncate_artist_table, 
-                               truncate_song_table, 
-                               truncate_user_table, 
+truncate_star_table_queries = [truncate_artist_table,
+                               truncate_song_table,
+                               truncate_user_table,
                                truncate_songplay_table]
 
-copy_table_queries = [staging_events_copy, 
+copy_table_queries = [staging_events_copy,
                       staging_songs_copy]
 
-insert_table_queries = [user_table_insert, 
-                        artist_table_insert, 
+insert_table_queries = [user_table_insert,
+                        artist_table_insert,
                         song_table_insert,
                         songplay_table_insert]
