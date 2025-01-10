@@ -1,7 +1,14 @@
 # Udacity Project - Sparkify Data Warehouse
 
+# Introduction
+
+This project builds a cloud-based data warehouse for Sparkify, a music streaming company, to enable advanced analytics of user activity. The warehouse is implemented using Amazon Redshift and designed with a star schema for efficient querying. The goal is to process and analyze large datasets containing user behavior and song metadata to provide actionable insights for Sparkify's business.
+
+# Key Deliverables
+- A star schema optimized for analytical queries.
+- An ETL pipeline that extracts data from S3, transforms it, and loads it into Redshift.
+    
 ## Table of Contents
-- [Rubric for Project](#rubric-for-project)
 - [Introduction](#introduction)
 - [Part 1 - Data Warehouse Design](#part-1---data-warehouse-design)
   - [Step 1 - Inspect the Data](#step-1---inspect-the-data)
@@ -11,52 +18,12 @@
   	- [Final Design](#final-design)
 - [Part 2 - Extract Transform Load (ETL) Design](#part-2---extract-transform-load-etl-design)
 - [Part 3 - Set up and Execute](#part-3---set-up-and-execute)
-  - [Step 1: Execute the Cloud Formation Template](#step-1-execute-the-cloud-formation-template)
-  - [Step 2: Fill Out the Config File](#step-2-fill-out-the-config-file)
-  - [Step 3: Upload Files to S3 Bucket](#step-3-upload-files-to-s3-bucket)
-  - [Step 4: Create the Tables](#step-4-create-the-tables)
-  - [Step 5: Run the ETL](#step-5-run-the-etl)
-  - [Step 6: Run Queries on the Data](#step-6-run-queries-on-the-data)
 - [Potential Improvements](#potential-improvements)
   - [Data Design](#data-design)
   - [Performance](#performance)
   - [Infrastructure](#infrastructure)
+- [Rubric for Project](#rubric-for-project)
 
-
-# Rubric for Project
-
-Below is the grading rubric for the project. 
-The provided code adheres strictly to PEP8 and PEP257 guidelines. 
-While this level of compliance is often unnecessary for many projects, 
-it serves as a demonstration of best practices in coding standards.
- 
-
-**Table Creation**
-
-| **Criteria**                             | **Submission Requirements**                                                                                     |
-|------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| Table creation script runs without errors. | The script, `create_tables.py`, runs in the terminal without errors. The script successfully connects to the Sparkify database, drops any tables if they exist, and creates the tables. |
-| Staging tables are properly defined.     | `CREATE` statements in `sql_queries.py` specify all columns for both the songs and logs staging tables with the right data types and conditions. |
-| Fact and dimensional tables for a star schema are properly defined. | `CREATE` statements in `sql_queries.py` specify all columns for each of the five tables with the right data types and conditions. |
-	
-**ETL**
-
-| **Criteria**                             | **Submission Requirements**                                                                                     |
-|------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| ETL script runs without errors.          | The script, `etl.py`, runs in the terminal without errors. The script connects to the Sparkify Redshift database, loads `log_data` and `song_data` into staging tables, and transforms them into the five tables. |
-| ETL script properly processes transformations in Python. | `INSERT` statements are correctly written for each table and handle duplicate records where appropriate. Both staging tables are used to insert data into the `songplays` table. |
-
-**Code Quality**
-| **Criteria**                             | **Submission Requirements**                                                                                     |
-|------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| The project shows proper use of documentation. | The `README` file includes a summary of the project, how to run the Python scripts, and an explanation of the files in the repository. Comments are used effectively, and each function has a docstring. |
-| The project code is clean and modular.   | Scripts have an intuitive, easy-to-follow structure with code separated into logical functions. Naming for variables and functions follows the PEP8 style guidelines. |
-
-# Introduction 
-
-*A music streaming startup, Sparkify, has grown their user base and song database and want to move their processes and data onto the cloud. Their data resides in S3, in a directory of JSON logs on user activity on the app, as well as a directory with JSON metadata on the songs in their app.*
-
-*As their data engineer, you are tasked with building an ETL pipeline that extracts their data from S3, stages them in Redshift, and transforms data into a set of dimensional tables for their analytics team to continue finding insights into what songs their users are listening to.*
 
 # Part 1 - Data Warehouse Design
 
@@ -281,8 +248,6 @@ Query: SELECT COUNT(*) FROM dim_date -> Count: 4018
    - Standardize encoding for special characters in the source data to ensure consistent formatting across all tables.
    - **Benefit**: Improves data quality and avoids errors when querying or transforming data.
 
----
-
 ## **Performance**
 1. **Optimize Manifest Files**:
    - Enhance the manifest creation process to dynamically include only the necessary files for incremental loading.
@@ -292,11 +257,37 @@ Query: SELECT COUNT(*) FROM dim_date -> Count: 4018
    - Review `VARCHAR` column sizes and limit them to realistic lengths.
    - **Benefit**: Saves disk space and improves query performance in Redshift.
 
----
-
 ## **Infrastructure**
 - **Reduce Costs with Free-Tier RDS**:
    - Use a free-tier RDS database instead of Redshift for smaller datasets.
    - This only applies if the data are going to be small.
    - **Benefit**: Reduces infrastructure costs while maintaining sufficient performance for this project.
+ 
+# Rubric for Project
 
+Below is the grading rubric for the project. 
+The provided code adheres strictly to PEP8 and PEP257 guidelines. 
+While this level of compliance is often unnecessary for many projects, 
+it serves as a demonstration of best practices in coding standards.
+ 
+
+**Table Creation**
+
+| **Criteria**                             | **Submission Requirements**                                                                                     |
+|------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| Table creation script runs without errors. | The script, `create_tables.py`, runs in the terminal without errors. The script successfully connects to the Sparkify database, drops any tables if they exist, and creates the tables. |
+| Staging tables are properly defined.     | `CREATE` statements in `sql_queries.py` specify all columns for both the songs and logs staging tables with the right data types and conditions. |
+| Fact and dimensional tables for a star schema are properly defined. | `CREATE` statements in `sql_queries.py` specify all columns for each of the five tables with the right data types and conditions. |
+	
+**ETL**
+
+| **Criteria**                             | **Submission Requirements**                                                                                     |
+|------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| ETL script runs without errors.          | The script, `etl.py`, runs in the terminal without errors. The script connects to the Sparkify Redshift database, loads `log_data` and `song_data` into staging tables, and transforms them into the five tables. |
+| ETL script properly processes transformations in Python. | `INSERT` statements are correctly written for each table and handle duplicate records where appropriate. Both staging tables are used to insert data into the `songplays` table. |
+
+**Code Quality**
+| **Criteria**                             | **Submission Requirements**                                                                                     |
+|------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| The project shows proper use of documentation. | The `README` file includes a summary of the project, how to run the Python scripts, and an explanation of the files in the repository. Comments are used effectively, and each function has a docstring. |
+| The project code is clean and modular.   | Scripts have an intuitive, easy-to-follow structure with code separated into logical functions. Naming for variables and functions follows the PEP8 style guidelines. |
